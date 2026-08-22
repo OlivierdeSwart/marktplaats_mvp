@@ -14,23 +14,18 @@ variable "notification_email" {
   default = "olivierdeswart@gmail.com"
 }
 
+# NB: de dlt-ingestie draait NIET hier maar in GitHub Actions (ingest.yml):
+# serverless compute op GCP heeft geen publieke internet-egress, dus de
+# source-API is er onbereikbaar. De workflow triggert deze job na de load.
 resource "databricks_job" "marketplace_elt" {
   name                = "marketplace-elt"
-  description         = "dlt (API -> Delta in GCS) gevolgd door dbt build (bronze -> silver -> gold)"
+  description         = "dbt build (bronze -> silver -> gold); getriggerd door de ingest-workflow in GitHub Actions"
   max_concurrent_runs = 1
 
   git_source {
     url      = var.github_repo_url
     provider = "gitHub"
     branch   = "main"
-  }
-
-  environment {
-    environment_key = "dlt-env"
-    spec {
-      client       = "1"
-      dependencies = ["dlt==1.30.0", "deltalake==1.6.3", "pyarrow==25.0.1", "gcsfs==2026.8.0"]
-    }
   }
 
   environment {
@@ -41,27 +36,8 @@ resource "databricks_job" "marketplace_elt" {
     }
   }
 
-  schedule {
-    quartz_cron_expression = "0 0 * * * ?" # elk uur, op het hele uur
-    timezone_id            = "Europe/Amsterdam"
-    pause_status           = "PAUSED"
-  }
-
   task {
-    task_key        = "ingest_dlt"
-    environment_key = "dlt-env"
-
-    spark_python_task {
-      python_file = "ingestion/job_entry.py"
-      source      = "GIT"
-    }
-  }
-
-  task {
-    task_key = "transform_dbt"
-    depends_on {
-      task_key = "ingest_dlt"
-    }
+    task_key        = "transform_dbt"
     environment_key = "dbt-env"
 
     dbt_task {
