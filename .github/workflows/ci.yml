@@ -27,10 +27,11 @@ jobs:
         run: uv sync
 
       - name: Lint SQL (sqlfluff)
-        run: cd transform && uv run sqlfluff lint transform
+        run: uv run sqlfluff lint transform
 
       - name: DBT Check
-        run: uv run dbt debug
+        working-directory: transform
+        run: uv run dbt debug --target ci
 
       - name: dbt build — ci-schema
         working-directory: transform
