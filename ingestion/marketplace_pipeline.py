@@ -15,6 +15,7 @@ import dlt
 from dlt.sources.rest_api import rest_api_source
 
 WORLD_START = "2026-08-15T00:00:00Z"
+USERS_START = "2026-07-01T00:00:00Z"  # users bestaan al vóór world start
 EVENTS_START = "2026-08-21T00:00:00Z"  # events zijn hoog-volume: start 1 dag terug
 
 
@@ -59,7 +60,7 @@ def marketplace_source(api_url: str):
                         "updated_since": {
                             "type": "incremental",
                             "cursor_path": "updated_at",
-                            "initial_value": WORLD_START,
+                            "initial_value": USERS_START,
                         },
                     },
                 },

@@ -11,6 +11,7 @@ from __future__ import annotations
 import random
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+from functools import lru_cache
 
 WORLD_START = datetime(2026, 8, 15, 0, 0, 0, tzinfo=timezone.utc)
 USER_EPOCH = WORLD_START - timedelta(days=30)
@@ -54,6 +55,7 @@ def n_listings_at(now: datetime) -> int:
     return max(0, int((now - WORLD_START).total_seconds() // LISTING_INTERVAL_S))
 
 
+@lru_cache(maxsize=250_000)
 def build_user(idx: int) -> dict:
     rng = random.Random(f"user-{idx}")
     created_at = USER_EPOCH + timedelta(seconds=idx * USER_INTERVAL_S)
@@ -83,6 +85,7 @@ class Lifecycle:
     seller_idx: int
 
 
+@lru_cache(maxsize=250_000)
 def build_lifecycle(idx: int) -> Lifecycle:
     rng = random.Random(f"listing-{idx}")
     created_at = WORLD_START + timedelta(seconds=idx * LISTING_INTERVAL_S)
@@ -163,9 +166,15 @@ def transaction_for(lc: Lifecycle, now: datetime) -> dict | None:
     }
 
 
-def events_for(lc: Lifecycle, since: datetime, until: datetime) -> list[dict]:
-    """Behavioural events (views/bids/messages) for one listing in a window."""
-    rng = random.Random(f"events-{lc.idx}")
+@lru_cache(maxsize=250_000)
+def _listing_events(idx: int) -> tuple:
+    """Alle events van één listing als compacte tuples, eenmalig gegenereerd.
+
+    Tijd-onafhankelijk (het volledige script wordt uitgeschreven), dus veilig
+    te cachen; endpoints filteren zelf op het gevraagde tijdvenster.
+    """
+    lc = build_lifecycle(idx)
+    rng = random.Random(f"events-{idx}")
     n_events = rng.randrange(3, 40)
     horizon = lc.ended_at or (lc.created_at + timedelta(days=14))
     out = []
@@ -173,15 +182,23 @@ def events_for(lc: Lifecycle, since: datetime, until: datetime) -> list[dict]:
         ts = lc.created_at + timedelta(
             seconds=rng.uniform(0, max((horizon - lc.created_at).total_seconds(), 60))
         )
-        if not (since < ts <= until):
-            continue
         user_idx = rng.randrange(0, n_users_at(ts))
-        out.append({
+        out.append((_iso(ts), e, rng.choice(EVENT_TYPES), user_idx, f"{ts:%Y%m%d%H}"))
+    return tuple(out)
+
+
+def events_for(lc: Lifecycle, since: datetime, until: datetime) -> list[dict]:
+    """Behavioural events (views/bids/messages) for one listing in a window."""
+    since_s, until_s = _iso(since), _iso(until)
+    return [
+        {
             "event_id": f"e{lc.idx:08d}-{e:03d}",
-            "event_type": rng.choice(EVENT_TYPES),
+            "event_type": event_type,
             "listing_id": f"l{lc.idx:08d}",
             "user_id": f"u{user_idx:07d}",
-            "session_id": f"s{user_idx:07d}-{ts:%Y%m%d%H}",
-            "occurred_at": _iso(ts),
-        })
-    return out
+            "session_id": f"s{user_idx:07d}-{hour}",
+            "occurred_at": ts,
+        }
+        for ts, e, event_type, user_idx, hour in _listing_events(lc.idx)
+        if since_s < ts <= until_s
+    ]
