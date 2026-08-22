@@ -1,0 +1,61 @@
+version: 2
+
+models:
+  - name: listings_current
+    description: >
+      De actuele staat van elke listing ooit gezien, afgeleid uit de
+      append-only historie (laatste rij per key wint). Bevat ook verkochte
+      en verwijderde listings, herkenbaar aan status.
+    columns:
+      - name: listing_id
+        description: Unieke identifier van de listing.
+        tests: [unique, not_null]
+      - name: status
+        description: Actuele status — active, sold of removed.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['active', 'sold', 'removed']
+      - name: price_eur
+        description: Actuele (laatst bekende) vraagprijs in euro's.
+        tests: [not_null]
+      - name: seller_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('users')
+              field: user_id
+
+  - name: listing_price_history
+    description: >
+      SCD2-weergave afgeleid uit de append-only historie — valid_from/valid_to
+      berekend met lead(), zonder updates te schrijven.
+    columns:
+      - name: listing_id
+        tests: [not_null]
+
+  - name: users
+    description: Alle gebruikers (kopers en verkopers).
+    columns:
+      - name: user_id
+        tests: [unique, not_null]
+
+  - name: transactions
+    description: Eén rij per verkochte listing.
+    columns:
+      - name: transaction_id
+        tests: [unique, not_null]
+      - name: listing_id
+        tests: [not_null]
+      - name: amount_eur
+        tests: [not_null]
+
+  - name: events
+    description: Gedragsevents op listings (views, biedingen, berichten, favorieten).
+    columns:
+      - name: event_id
+        tests: [unique, not_null]
+      - name: event_type
+        tests:
+          - accepted_values:
+              values: ['view', 'favorite', 'message', 'bid']

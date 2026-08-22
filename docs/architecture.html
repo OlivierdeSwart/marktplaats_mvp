@@ -1,0 +1,447 @@
+<title>Marktplaats Lakehouse MVP</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --paper: #FBFAF7;
+    --card: #FFFFFF;
+    --ink: #21252C;
+    --muted: #5D6672;
+    --line: #B8B3A6;
+    --line-soft: #D3CFC3;
+    --accent: #0E6E68;
+    --accent-soft: #0E6E6818;
+    --bronze: #A66B2E;
+    --silver: #78818C;
+    --gold: #A8861C;
+    --bronze-soft: #A66B2E14;
+    --silver-soft: #78818C14;
+    --gold-soft: #A8861C16;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #16191E;
+      --card: #1D2127;
+      --ink: #E9E7E1;
+      --muted: #9BA4AE;
+      --line: #3B424B;
+      --line-soft: #2C323A;
+      --accent: #43B7AE;
+      --accent-soft: #43B7AE1E;
+      --bronze: #CE9250;
+      --silver: #9AA4AF;
+      --gold: #D2AC3F;
+      --bronze-soft: #CE925018;
+      --silver-soft: #9AA4AF16;
+      --gold-soft: #D2AC3F18;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #16191E;
+    --card: #1D2127;
+    --ink: #E9E7E1;
+    --muted: #9BA4AE;
+    --line: #3B424B;
+    --line-soft: #2C323A;
+    --accent: #43B7AE;
+    --accent-soft: #43B7AE1E;
+    --bronze: #CE9250;
+    --silver: #9AA4AF;
+    --gold: #D2AC3F;
+    --bronze-soft: #CE925018;
+    --silver-soft: #9AA4AF16;
+    --gold-soft: #D2AC3F18;
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.55;
+    margin: 0;
+    padding: 48px 24px 80px;
+  }
+  .wrap { max-width: 1020px; margin: 0 auto; }
+
+  header { margin-bottom: 40px; }
+  .eyebrow {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 10px;
+  }
+  h1 {
+    font-family: Archivo, "Helvetica Neue", Arial, sans-serif;
+    font-weight: 700;
+    font-size: clamp(28px, 4.5vw, 42px);
+    line-height: 1.08;
+    letter-spacing: -0.015em;
+    margin: 0 0 12px;
+    text-wrap: balance;
+  }
+  .lede { color: var(--muted); max-width: 62ch; margin: 0; font-size: 16.5px; }
+
+  section { margin-top: 56px; }
+  h2 {
+    font-family: Archivo, "Helvetica Neue", Arial, sans-serif;
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+    margin: 0 0 6px;
+  }
+  .intro { color: var(--muted); max-width: 68ch; margin: 0 0 20px; font-size: 15px; }
+
+  figure {
+    margin: 0;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 20px 16px 12px;
+    overflow-x: auto;
+    box-shadow: 0 1px 4px rgba(60, 55, 40, 0.06);
+  }
+  figure svg { display: block; max-width: 100%; height: auto; min-width: 640px; margin: 0 auto; }
+  figcaption {
+    font-size: 13.5px;
+    color: var(--muted);
+    border-top: 1px solid var(--line-soft);
+    margin-top: 14px;
+    padding: 12px 6px 4px;
+    max-width: 78ch;
+  }
+
+  /* --- SVG vocabulaire --- */
+  .dia { color: var(--ink); }
+  .dia .zone { fill: none; stroke: var(--line); stroke-dasharray: 5 4; rx: 8; }
+  .dia .box { fill: var(--paper); stroke: var(--line); }
+  .dia .box2 { fill: var(--accent-soft); stroke: var(--accent); }
+  .dia .flow { stroke: currentColor; fill: none; stroke-width: 1.4; }
+  .dia .flow-acc { stroke: var(--accent); fill: none; stroke-width: 2.2; }
+  .dia .flow-dash { stroke: var(--muted); fill: none; stroke-width: 1.2; stroke-dasharray: 4 4; }
+  .dia text { fill: currentColor; font-family: "IBM Plex Sans", sans-serif; font-size: 13px; }
+  .dia .t { font-weight: 600; font-size: 13.5px; }
+  .dia .m { font-family: "IBM Plex Mono", monospace; font-size: 11px; fill: var(--muted); }
+  .dia .lbl { font-family: "IBM Plex Mono", monospace; font-size: 11px; fill: var(--muted); }
+  .dia .lbl-acc { font-family: "IBM Plex Mono", monospace; font-size: 11.5px; font-weight: 500; fill: var(--accent); }
+  .dia .zlbl { font-family: "IBM Plex Mono", monospace; font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; fill: var(--muted); }
+  .dia .hd-bronze { fill: var(--bronze-soft); stroke: var(--bronze); }
+  .dia .hd-silver { fill: var(--silver-soft); stroke: var(--silver); }
+  .dia .hd-gold { fill: var(--gold-soft); stroke: var(--gold); }
+  .dia .tx-bronze { fill: var(--bronze); font-weight: 600; }
+  .dia .tx-silver { fill: var(--silver); font-weight: 600; }
+  .dia .tx-gold { fill: var(--gold); font-weight: 600; }
+
+  footer { margin-top: 64px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line-soft); padding-top: 16px; }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">MVP · Databricks × GCP × dbt</p>
+  <h1>Marktplaats Lakehouse MVP</h1>
+  <p class="lede">Een end-to-end analytics-platform in een weekend: synthetische marketplace-data via een
+  eigen REST-API, ingestion met dlt naar Delta-in-GCS, medallion-transformaties met dbt op Databricks,
+  en een conversational-BI-laag met metric views en Genie. Alles geprovisiond met Terraform, bewaakt door CI.</p>
+</header>
+
+<!-- ================= 1. PLATFORM ================= -->
+<section>
+  <h2>1 · Platform &amp; infrastructuur</h2>
+  <p class="intro">Twee cloud-omgevingen en de plek waar het werk gebeurt. De cruciale koppeling is de
+  Unity Catalog external location: Databricks leest de Delta tables <em>in-place</em> uit de eigen GCS-bucket —
+  de data verhuist nooit.</p>
+  <figure>
+    <svg class="dia" viewBox="0 0 960 590" width="960" height="590" role="img" aria-label="Platformdiagram: laptop en GitHub Actions draaien Terraform, dlt en dbt; GCP host de source-API en de raw-bucket; Databricks leest de bucket via een external location">
+      <defs>
+        <marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+        </marker>
+        <marker id="ar1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/>
+        </marker>
+      </defs>
+
+      <!-- lane: lokaal + CI -->
+      <rect class="zone" x="40" y="36" width="880" height="128" rx="8"/>
+      <text class="zlbl" x="56" y="60">Laptop · GitHub Actions</text>
+
+      <rect class="box" x="70" y="76" width="150" height="64" rx="4"/>
+      <text class="t" x="145" y="102" text-anchor="middle">Terraform</text>
+      <text class="m" x="145" y="120" text-anchor="middle">infra als code</text>
+
+      <rect class="box" x="290" y="76" width="150" height="64" rx="4"/>
+      <text class="t" x="365" y="102" text-anchor="middle">dlt</text>
+      <text class="m" x="365" y="120" text-anchor="middle">ingestion (uv run)</text>
+
+      <rect class="box" x="510" y="76" width="150" height="64" rx="4"/>
+      <text class="t" x="585" y="102" text-anchor="middle">dbt</text>
+      <text class="m" x="585" y="120" text-anchor="middle">transform + tests</text>
+
+      <rect class="box" x="730" y="76" width="160" height="64" rx="4"/>
+      <text class="t" x="810" y="102" text-anchor="middle">GitHub Actions</text>
+      <text class="m" x="810" y="120" text-anchor="middle">CI: lint + dbt build</text>
+
+      <!-- zone: GCP -->
+      <rect class="zone" x="40" y="228" width="400" height="330" rx="8"/>
+      <text class="zlbl" x="56" y="252">Google Cloud · marktplaats-mvp-2026</text>
+
+      <rect class="box" x="70" y="284" width="150" height="70" rx="4"/>
+      <text class="t" x="145" y="310" text-anchor="middle">Cloud Run</text>
+      <text class="m" x="145" y="328" text-anchor="middle">source-api (FastAPI)</text>
+
+      <rect class="box" x="70" y="452" width="150" height="56" rx="4"/>
+      <text class="t" x="145" y="475" text-anchor="middle">Artifact Registry</text>
+      <text class="m" x="145" y="492" text-anchor="middle">docker images</text>
+
+      <rect class="box2" x="252" y="304" width="158" height="96" rx="4"/>
+      <text class="t" x="331" y="336" text-anchor="middle">GCS bucket · raw</text>
+      <text class="m" x="331" y="356" text-anchor="middle">Delta tables</text>
+      <text class="m" x="331" y="372" text-anchor="middle">append-only bronze</text>
+
+      <!-- zone: Databricks -->
+      <rect class="zone" x="500" y="228" width="420" height="330" rx="8"/>
+      <text class="zlbl" x="516" y="252">Databricks · serverless workspace</text>
+
+      <rect class="box" x="530" y="284" width="170" height="116" rx="4"/>
+      <text class="t" x="615" y="312" text-anchor="middle">Unity Catalog</text>
+      <text class="m" x="615" y="332" text-anchor="middle">catalog marktplaats</text>
+      <text class="m" x="615" y="348" text-anchor="middle">bronze · silver · gold</text>
+      <text class="m" x="615" y="364" text-anchor="middle">metric views</text>
+
+      <rect class="box" x="740" y="284" width="150" height="70" rx="4"/>
+      <text class="t" x="815" y="310" text-anchor="middle">SQL Warehouse</text>
+      <text class="m" x="815" y="328" text-anchor="middle">2X-S · auto-stop 5 min</text>
+
+      <rect class="box" x="740" y="402" width="150" height="80" rx="4"/>
+      <text class="t" x="815" y="430" text-anchor="middle">AI/BI</text>
+      <text class="m" x="815" y="448" text-anchor="middle">dashboards</text>
+      <text class="m" x="815" y="464" text-anchor="middle">Genie (NL-vragen)</text>
+
+      <!-- arrows: terraform naar beide clouds -->
+      <path class="flow" d="M120 140 L120 205 L240 205 L240 228" marker-end="url(#ar1)"/>
+      <path class="flow" d="M170 140 L170 190 L706 190 L706 228" marker-end="url(#ar1)"/>
+      <text class="lbl" x="188" y="184">provisiont beide omgevingen</text>
+
+      <!-- dlt naar API en bucket -->
+      <path class="flow" d="M340 140 L340 264 L145 264 L145 284" marker-end="url(#ar1)"/>
+      <text class="lbl" x="350" y="206">GET /listings · /events …</text>
+      <path class="flow" d="M390 140 L390 304" marker-end="url(#ar1)"/>
+      <text class="lbl" x="398" y="290">schrijft Delta (append)</text>
+
+      <!-- dbt naar warehouse -->
+      <path class="flow" d="M610 140 L610 214 L815 214 L815 284" marker-end="url(#ar1)"/>
+      <text class="lbl" x="628" y="208">SQL over HTTPS</text>
+
+      <!-- registry -> cloud run -->
+      <path class="flow-dash" d="M145 452 L145 354" marker-end="url(#ar1)"/>
+      <text class="lbl" x="153" y="418">serveert image</text>
+
+      <!-- UC -> bucket: de kernkoppeling -->
+      <path class="flow-acc" d="M530 352 L410 352" marker-end="url(#ar1a)"/>
+      <text class="lbl-acc" x="470" y="340" text-anchor="middle">external location</text>
+      <text class="lbl-acc" x="470" y="372" text-anchor="middle">leest in-place</text>
+
+      <!-- BI -> warehouse -->
+      <path class="flow" d="M815 402 L815 354" marker-end="url(#ar1)"/>
+      <text class="lbl" x="823" y="382">queries</text>
+    </svg>
+    <figcaption><strong>Platformoverzicht.</strong> Terraform provisiont beide omgevingen (bucket, service
+    accounts, Cloud Run, budgetten, catalog-structuur). dlt haalt data uit de eigen source-API en schrijft
+    Delta rechtstreeks naar GCS; Databricks serverless leest die bestanden via een Unity Catalog external
+    location zonder ze te kopiëren. dbt en CI praten alleen met de SQL warehouse.</figcaption>
+  </figure>
+</section>
+
+<!-- ================= 2. DATA FLOW ================= -->
+<section>
+  <h2>2 · Dataflow — medallion</h2>
+  <p class="intro">Van API-response tot KPI. Twee extractiepatronen voeden bronze; silver bouwt herbruikbare,
+  geteste entiteiten met volledige historie; gold is het sterschema waar dashboards en Genie op draaien.</p>
+  <figure>
+    <svg class="dia" viewBox="0 0 1100 660" width="1100" height="660" role="img" aria-label="Dataflow van source-API via dlt naar bronze Delta tables, dbt silver met snapshots en current views, en gold met dims, facts en metric views richting dashboard en Genie">
+      <defs>
+        <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+        </marker>
+      </defs>
+
+      <!-- kolom: source -->
+      <rect class="box" x="40" y="80" width="200" height="200" rx="4"/>
+      <text class="t" x="140" y="110" text-anchor="middle">Source-API</text>
+      <text class="m" x="60" y="140">GET /listings</text>
+      <text class="m" x="60" y="160">GET /listings/full</text>
+      <text class="m" x="60" y="180">GET /users</text>
+      <text class="m" x="60" y="200">GET /transactions</text>
+      <text class="m" x="60" y="220">GET /events</text>
+      <text class="m" x="60" y="252">cursor-paginatie</text>
+      <text class="m" x="60" y="268">updated_since-filter</text>
+
+      <!-- kolom: bronze -->
+      <rect class="hd-bronze" x="320" y="48" width="200" height="30" rx="4"/>
+      <text class="tx-bronze" x="420" y="68" text-anchor="middle">BRONZE · Delta in GCS</text>
+      <rect class="box" x="320" y="92" width="200" height="128" rx="4"/>
+      <text class="t" x="420" y="118" text-anchor="middle">raw feeds</text>
+      <text class="m" x="340" y="144">listings · users</text>
+      <text class="m" x="340" y="162">transactions · events</text>
+      <text class="m" x="340" y="188">append-only, ruwe payload</text>
+      <rect class="box" x="320" y="240" width="200" height="84" rx="4"/>
+      <text class="t" x="420" y="266" text-anchor="middle">listings_full</text>
+      <text class="m" x="340" y="290">volledige actieve set</text>
+      <text class="m" x="340" y="306">per run vervangen</text>
+
+      <!-- dlt arrows -->
+      <path class="flow" d="M240 150 L320 150" marker-end="url(#ar2)"/>
+      <text class="lbl" x="280" y="128" text-anchor="middle">dlt</text>
+      <text class="lbl" x="280" y="142" text-anchor="middle">incremental</text>
+      <path class="flow" d="M240 262 L320 274" marker-end="url(#ar2)"/>
+      <text class="lbl" x="280" y="246" text-anchor="middle">dlt</text>
+      <text class="lbl" x="280" y="260" text-anchor="middle">full extract</text>
+
+      <!-- kolom: silver -->
+      <rect class="hd-silver" x="600" y="48" width="210" height="30" rx="4"/>
+      <text class="tx-silver" x="705" y="68" text-anchor="middle">SILVER · dbt</text>
+      <rect class="box" x="600" y="92" width="210" height="70" rx="4"/>
+      <text class="t" x="705" y="118" text-anchor="middle">staging views</text>
+      <text class="m" x="620" y="140">rename · cast · dedupe</text>
+      <rect class="box" x="600" y="186" width="210" height="102" rx="4"/>
+      <text class="t" x="705" y="212" text-anchor="middle">snapshots (SCD2)</text>
+      <text class="m" x="620" y="236">dbt_valid_from / _to</text>
+      <text class="m" x="620" y="254">hard_deletes =</text>
+      <text class="m" x="620" y="270">'invalidate'</text>
+      <rect class="box" x="600" y="312" width="210" height="86" rx="4"/>
+      <text class="t" x="705" y="338" text-anchor="middle">current views</text>
+      <text class="m" x="620" y="362">qualify row_number()</text>
+      <text class="m" x="620" y="378">over key = 1</text>
+
+      <path class="flow" d="M520 156 L600 127" marker-end="url(#ar2)"/>
+      <path class="flow" d="M520 282 L600 237" marker-end="url(#ar2)"/>
+      <path class="flow" d="M705 162 L705 186" marker-end="url(#ar2)"/>
+      <path class="flow" d="M705 288 L705 312" marker-end="url(#ar2)"/>
+
+      <!-- kolom: gold -->
+      <rect class="hd-gold" x="890" y="48" width="180" height="30" rx="4"/>
+      <text class="tx-gold" x="980" y="68" text-anchor="middle">GOLD · dbt</text>
+      <rect class="box" x="890" y="92" width="180" height="150" rx="4"/>
+      <text class="t" x="980" y="118" text-anchor="middle">sterschema</text>
+      <text class="m" x="910" y="144">dim_listings</text>
+      <text class="m" x="910" y="162">dim_users</text>
+      <text class="m" x="910" y="180">fct_transactions</text>
+      <text class="m" x="910" y="198">fct_events</text>
+      <text class="m" x="910" y="224">incremental models</text>
+      <rect class="box2" x="890" y="266" width="180" height="76" rx="4"/>
+      <text class="t" x="980" y="292" text-anchor="middle">metric views</text>
+      <text class="m" x="980" y="312" text-anchor="middle">GMV · conversie</text>
+      <text class="m" x="980" y="328" text-anchor="middle">time-to-sell · fees</text>
+
+      <path class="flow" d="M810 355 L890 220 " marker-end="url(#ar2)"/>
+      <path class="flow" d="M980 242 L980 266" marker-end="url(#ar2)"/>
+
+      <!-- consumption -->
+      <rect class="box" x="700" y="470" width="170" height="80" rx="4"/>
+      <text class="t" x="785" y="500" text-anchor="middle">AI/BI dashboard</text>
+      <text class="m" x="785" y="522" text-anchor="middle">marktplaats-KPI's</text>
+      <rect class="box" x="900" y="470" width="170" height="80" rx="4"/>
+      <text class="t" x="985" y="500" text-anchor="middle">Genie space</text>
+      <text class="m" x="985" y="522" text-anchor="middle">"hoe snel verkopen</text>
+      <text class="m" x="985" y="538" text-anchor="middle">fietsen in Utrecht?"</text>
+
+      <path class="flow" d="M950 342 L810 470" marker-end="url(#ar2)"/>
+      <path class="flow" d="M985 342 L985 470" marker-end="url(#ar2)"/>
+      <text class="lbl" x="1000" y="390">semantiek uit dbt-yml</text>
+      <text class="lbl" x="1000" y="406">via persist_docs</text>
+
+      <!-- tests band -->
+      <path class="flow-dash" d="M600 430 L1070 430" />
+      <text class="lbl" x="600" y="452">dbt tests: unique · not_null · relationships · freshness — op elke laag vanaf staging</text>
+    </svg>
+    <figcaption><strong>Medallion-flow.</strong> dlt gebruikt twee patronen: incrementele feeds (cursor +
+    <span style="font-family:'IBM Plex Mono',monospace">updated_since</span>) voor de append-only historie, en een
+    full extract van actieve listings die per run wordt vervangen — daaruit "verdwijnen" verwijderde records,
+    wat de snapshot via <span style="font-family:'IBM Plex Mono',monospace">hard_deletes='invalidate'</span> omzet in
+    een gesloten geldigheidsvenster. Eén immutable historie levert twee leespatronen: SCD2 en current.</figcaption>
+  </figure>
+</section>
+
+<!-- ================= 3. CI/CD ================= -->
+<section>
+  <h2>3 · CI/CD — van branch tot productie</h2>
+  <p class="intro">Elke wijziging volgt dezelfde route: lokaal gelint, in CI gebouwd en getest tegen een
+  wegwerp-schema, en pas na een groene check en merge gedeployed naar prod. Main is beschermd — niemand pusht erlangs.</p>
+  <figure>
+    <svg class="dia" viewBox="0 0 960 470" width="960" height="470" role="img" aria-label="CI/CD-flow: feature branch met pre-commit, pull request triggert GitHub Actions met sqlfluff en dbt build naar een ci-schema; na merge deployt een tweede workflow naar prod">
+      <defs>
+        <marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+        </marker>
+        <marker id="ar3a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/>
+        </marker>
+      </defs>
+
+      <rect class="box" x="40" y="90" width="160" height="64" rx="4"/>
+      <text class="t" x="120" y="116" text-anchor="middle">feature branch</text>
+      <text class="m" x="120" y="134" text-anchor="middle">pre-commit: sqlfluff</text>
+
+      <rect class="box" x="270" y="90" width="150" height="64" rx="4"/>
+      <text class="t" x="345" y="116" text-anchor="middle">pull request</text>
+      <text class="m" x="345" y="134" text-anchor="middle">review + checks</text>
+
+      <path class="flow" d="M200 122 L270 122" marker-end="url(#ar3)"/>
+      <text class="lbl" x="235" y="112" text-anchor="middle">push</text>
+
+      <!-- CI container -->
+      <rect class="zone" x="490" y="40" width="230" height="200" rx="8"/>
+      <text class="zlbl" x="506" y="64">GitHub Actions · CI</text>
+      <rect class="box" x="512" y="82" width="186" height="52" rx="4"/>
+      <text class="t" x="605" y="104" text-anchor="middle">sqlfluff lint</text>
+      <text class="m" x="605" y="122" text-anchor="middle">dialect: databricks</text>
+      <rect class="box" x="512" y="158" width="186" height="52" rx="4"/>
+      <text class="t" x="605" y="180" text-anchor="middle">dbt build</text>
+      <text class="m" x="605" y="198" text-anchor="middle">--target ci</text>
+      <path class="flow" d="M605 134 L605 158" marker-end="url(#ar3)"/>
+
+      <path class="flow" d="M420 112 L490 112" marker-end="url(#ar3)"/>
+      <text class="lbl" x="455" y="102" text-anchor="middle">triggert</text>
+      <path class="flow-dash" d="M490 200 L420 140" marker-end="url(#ar3)"/>
+      <text class="lbl" x="428" y="182">status ✓/✗</text>
+
+      <rect class="box" x="790" y="158" width="140" height="52" rx="4"/>
+      <text class="t" x="860" y="180" text-anchor="middle">schema: ci</text>
+      <text class="m" x="860" y="198" text-anchor="middle">wegwerp-build</text>
+      <path class="flow" d="M698 184 L790 184" marker-end="url(#ar3)"/>
+
+      <!-- merge naar main -->
+      <rect class="box2" x="270" y="310" width="150" height="64" rx="4"/>
+      <text class="t" x="345" y="336" text-anchor="middle">main</text>
+      <text class="m" x="345" y="354" text-anchor="middle">branch protection</text>
+      <path class="flow-acc" d="M345 154 L345 310" marker-end="url(#ar3a)"/>
+      <text class="lbl-acc" x="356" y="240">merge — alleen bij groen</text>
+
+      <!-- deploy container -->
+      <rect class="zone" x="490" y="290" width="230" height="110" rx="8"/>
+      <text class="zlbl" x="506" y="314">GitHub Actions · deploy</text>
+      <rect class="box" x="512" y="330" width="186" height="52" rx="4"/>
+      <text class="t" x="605" y="352" text-anchor="middle">dbt build</text>
+      <text class="m" x="605" y="370" text-anchor="middle">--target prod</text>
+
+      <path class="flow" d="M420 342 L490 342" marker-end="url(#ar3)"/>
+      <text class="lbl" x="455" y="332" text-anchor="middle">on: main</text>
+
+      <rect class="box" x="790" y="330" width="140" height="52" rx="4"/>
+      <text class="t" x="860" y="352" text-anchor="middle">silver + gold</text>
+      <text class="m" x="860" y="370" text-anchor="middle">productie-schemas</text>
+      <path class="flow" d="M698 356 L790 356" marker-end="url(#ar3)"/>
+      <text class="lbl" x="744" y="346" text-anchor="middle">deploy</text>
+    </svg>
+    <figcaption><strong>Controlled deployment.</strong> Pre-commit vangt fouten vóór de commit; de PR-workflow
+    lint met sqlfluff en draait <span style="font-family:'IBM Plex Mono',monospace">dbt build</span> (compileren,
+    runnen én testen) tegen een geïsoleerd ci-schema op de SQL warehouse. Branch protection op main eist een
+    groene check; de merge zelf triggert de deploy naar de productie-schemas. Secrets (Databricks-token) staan
+    in GitHub, nooit in code.</figcaption>
+  </figure>
+</section>
+
+<footer>
+  Marktplaats MVP · olivierdeswart · gebouwd met dlt 1.30 · dbt-core 1.12 · Terraform 1.14 · Databricks serverless op GCP
+</footer>
+</div>

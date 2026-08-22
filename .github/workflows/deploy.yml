@@ -1,0 +1,27 @@
+# CD: draait bij elke merge/push naar main — deployt naar de prod-schemas.
+name: deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  dbt-build-prod:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: dbt build — prod
+        working-directory: transform
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_HTTP_PATH: ${{ secrets.DATABRICKS_HTTP_PATH }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+        run: uv run dbt build --target prod

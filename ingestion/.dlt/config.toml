@@ -1,0 +1,5 @@
+[sources.marketplace]
+api_url = "https://marketplace-source-api-nqpnvlws2a-ez.a.run.app"
+
+[destination.filesystem]
+bucket_url = "gs://marktplaats-mvp-2026-raw"

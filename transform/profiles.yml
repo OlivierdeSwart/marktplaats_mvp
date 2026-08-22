@@ -1,0 +1,35 @@
+# Auth via env vars — geen secrets in git.
+# Lokaal:  export DATABRICKS_TOKEN=$(databricks auth token -p marktplaats | jq -r .access_token)
+# CI:      GitHub Actions secrets
+marktplaats:
+  target: dev
+  outputs:
+    dev:
+      type: databricks
+      catalog: marktplaats
+      schema: silver
+      host: "{{ env_var('DATABRICKS_HOST', '8259556818854723.3.gcp.databricks.com') }}"
+      http_path: "{{ env_var('DATABRICKS_HTTP_PATH', '') }}"
+      token: "{{ env_var('DATABRICKS_TOKEN', '') }}"
+      threads: 4
+
+    # CI: alles in één wegwerp-schema, zie generate_schema_name-macro
+    ci:
+      type: databricks
+      catalog: marktplaats
+      schema: ci
+      host: "{{ env_var('DATABRICKS_HOST', '8259556818854723.3.gcp.databricks.com') }}"
+      http_path: "{{ env_var('DATABRICKS_HTTP_PATH', '') }}"
+      token: "{{ env_var('DATABRICKS_TOKEN', '') }}"
+      threads: 4
+
+    # prod = zelfde omgeving dit weekend; het onderscheid zit in de route
+    # ernaartoe (alleen via merge naar main)
+    prod:
+      type: databricks
+      catalog: marktplaats
+      schema: silver
+      host: "{{ env_var('DATABRICKS_HOST', '8259556818854723.3.gcp.databricks.com') }}"
+      http_path: "{{ env_var('DATABRICKS_HTTP_PATH', '') }}"
+      token: "{{ env_var('DATABRICKS_TOKEN', '') }}"
+      threads: 4

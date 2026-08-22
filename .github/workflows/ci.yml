@@ -1,0 +1,32 @@
+# CI: draait bij elke pull request naar main.
+# Twee checks: sqlfluff-lint en een volledige dbt build (run + test)
+# tegen een geïsoleerd ci-schema op de Databricks SQL warehouse.
+name: ci
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Lint SQL (sqlfluff)
+        run: uv run sqlfluff lint transform
+
+      - name: dbt build — ci-schema
+        working-directory: transform
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_HTTP_PATH: ${{ secrets.DATABRICKS_HTTP_PATH }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+        run: uv run dbt build --target ci

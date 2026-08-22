@@ -1,0 +1,50 @@
+version: 2
+
+models:
+  - name: dim_users
+    description: Gebruikersdimensie met lifetime-activiteit.
+    columns:
+      - name: user_id
+        description: Unieke gebruikers-id.
+        tests: [unique, not_null]
+      - name: lifetime_sales
+        description: Aantal succesvolle verkopen van deze gebruiker.
+
+  - name: dim_listings
+    description: >
+      Listingdimensie — actuele staat plus afgeleide kenmerken zoals
+      tijd-op-markt en verkocht-vlag.
+    columns:
+      - name: listing_id
+        tests: [unique, not_null]
+      - name: current_price_eur
+        description: Laatst bekende vraagprijs in euro's.
+      - name: hours_on_market
+        description: Uren tussen plaatsing en laatste statuswijziging.
+
+  - name: fct_transactions
+    description: >
+      Feitentabel verkopen — één rij per transactie, verrijkt met
+      listingkenmerken. Basis voor GMV, fees en time-to-sell.
+    columns:
+      - name: transaction_id
+        tests: [unique, not_null]
+      - name: listing_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_listings')
+              field: listing_id
+      - name: amount_eur
+        description: Verkoopbedrag in euro's (GMV-component).
+        tests: [not_null]
+      - name: hours_to_sell
+        description: Uren tussen plaatsing en verkoop.
+
+  - name: fct_events
+    description: Feitentabel gedragsevents, verrijkt met listingcontext.
+    columns:
+      - name: event_id
+        tests: [unique, not_null]
+      - name: event_type
+        tests: [not_null]

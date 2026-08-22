@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# dlt
+ingestion/.dlt/secrets.toml
+ingestion/_storage/
+*.duckdb
+
+# dbt
+transform/target/
+transform/dbt_packages/
+transform/logs/
+logs/
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+!**/example.tfvars
+
+# Secrets & credentials — never commit
+*.json.key
+service-account*.json
+.env
+.envrc
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

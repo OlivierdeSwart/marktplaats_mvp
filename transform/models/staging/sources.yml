@@ -1,0 +1,30 @@
+version: 2
+
+sources:
+  - name: bronze
+    description: >
+      Raw Delta tables in GCS, geschreven door dlt vanuit de marketplace-API.
+      Extern beheerd: Unity Catalog wijst alleen naar de bestanden.
+    database: marktplaats
+    schema: bronze
+    tables:
+      - name: listings
+        description: Incrementele change feed van listings — elke statuswijziging is een rij (append-only).
+        loaded_at_field: "cast(updated_at as timestamp)"
+        freshness:
+          warn_after: {count: 12, period: hour}
+          error_after: {count: 48, period: hour}
+      - name: users
+        description: Gebruikers (append-only, muteren zelden).
+      - name: transactions
+        description: Transacties van verkochte listings (immutable).
+      - name: events
+        description: Gedragsevents — views, biedingen, berichten, favorieten (append-only stream).
+        loaded_at_field: "cast(occurred_at as timestamp)"
+        freshness:
+          warn_after: {count: 12, period: hour}
+      - name: listings_full
+        description: >
+          Volledige extract van de nu-actieve listings, per run vervangen.
+          Verwijderde/verkochte listings ontbreken hier — de dbt-snapshot
+          detecteert dat als hard delete.

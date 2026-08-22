@@ -1,0 +1,11 @@
+# Lokale checks vóór elke commit: dezelfde lint als in CI.
+# Eénmalig activeren: uv run pre-commit install
+repos:
+  - repo: local
+    hooks:
+      - id: sqlfluff-lint
+        name: sqlfluff lint (databricks-dialect, dbt-templater)
+        entry: uv run sqlfluff lint
+        language: system
+        files: ^transform/.*\.sql$
+        pass_filenames: true
