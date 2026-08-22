@@ -27,7 +27,7 @@ jobs:
         run: uv sync
 
       - name: Lint SQL (sqlfluff)
-        run: uv run sqlfluff lint transform
+        run: cd transform && uv run sqlfluff lint transform
 
       - name: DBT Check
         run: uv run dbt debug
