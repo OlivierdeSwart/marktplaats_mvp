@@ -10,6 +10,12 @@ on:
 jobs:
   lint-and-build:
     runs-on: ubuntu-latest
+    # env op job-niveau: de dbt-templater van sqlfluff heeft bij het
+    # compileren ook een warehouse-verbinding nodig, niet alleen dbt build
+    env:
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_HTTP_PATH: ${{ secrets.DATABRICKS_HTTP_PATH }}
+      DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -23,10 +29,9 @@ jobs:
       - name: Lint SQL (sqlfluff)
         run: uv run sqlfluff lint transform
 
+      - name: DBT Check
+        run: uv run dbt debug
+
       - name: dbt build — ci-schema
         working-directory: transform
-        env:
-          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
-          DATABRICKS_HTTP_PATH: ${{ secrets.DATABRICKS_HTTP_PATH }}
-          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
         run: uv run dbt build --target ci
