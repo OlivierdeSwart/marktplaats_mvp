@@ -23,6 +23,9 @@ models:
       +schema: silver
     gold:
       +materialized: table
+      # tabellen worden elke run herbouwd -> stats gaan verloren; direct
+      # verversen zodat de cost-based optimizer nooit hoeft te gokken
+      +post-hook: "analyze table {{ this }} compute statistics for all columns"
       +schema: gold
 
 snapshots:
