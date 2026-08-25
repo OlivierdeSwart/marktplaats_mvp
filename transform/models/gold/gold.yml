@@ -2,25 +2,60 @@ version: 2
 
 models:
   - name: dim_users
-    description: Gebruikersdimensie met lifetime-activiteit.
+    description: Gebruikersdimensie — één rij per gebruiker, met lifetime-activiteit.
     columns:
       - name: user_id
-        description: Unieke gebruikers-id.
+        description: Unieke gebruikers-id (natuurlijke sleutel uit de bron).
         tests: [unique, not_null]
+      - name: username
+        description: Weergavenaam van de gebruiker.
+      - name: city
+        description: Woonplaats van de gebruiker.
+      - name: province
+        description: Provincie/regio van de gebruiker.
+      - name: kyc_verified
+        description: Of de identiteit van de gebruiker geverifieerd is (know-your-customer).
+      - name: registered_at
+        description: Moment van registratie op het platform.
+      - name: lifetime_listings
+        description: Totaal aantal listings dat deze gebruiker ooit plaatste.
       - name: lifetime_sales
-        description: Aantal succesvolle verkopen van deze gebruiker.
+        description: Totaal aantal succesvolle verkopen van deze gebruiker.
 
   - name: dim_listings
     description: >
-      Listingdimensie — actuele staat plus afgeleide kenmerken zoals
-      tijd-op-markt en verkocht-vlag.
+      Listingdimensie — actuele staat van elke listing ooit gezien, plus
+      afgeleide kenmerken zoals tijd-op-markt en verkocht-vlag.
     columns:
       - name: listing_id
+        description: Unieke listing-id (natuurlijke sleutel uit de bron).
         tests: [unique, not_null]
+      - name: seller_id
+        description: Gebruikers-id van de verkoper (verwijst naar dim_users).
+      - name: title
+        description: Titel van de advertentie.
+      - name: category
+        description: Hoofdcategorie (bijv. Fietsen, Elektronica).
+      - name: subcategory
+        description: Subcategorie binnen de hoofdcategorie.
+      - name: brand
+        description: Merk van het aangeboden item.
+      - name: condition
+        description: Staat van het item (Nieuw, Zo goed als nieuw, Gebruikt, Refurbished).
       - name: current_price_eur
         description: Laatst bekende vraagprijs in euro's.
+      - name: city
+        description: Plaats waar het item wordt aangeboden.
+      - name: status
+        description: Actuele status — active (te koop), sold (verkocht) of removed (door verkoper verwijderd).
+      - name: created_at
+        description: Moment van plaatsing.
+      - name: updated_at
+        description: Moment van de laatste wijziging (prijswijziging, verkoop of verwijdering).
       - name: hours_on_market
         description: Uren tussen plaatsing en laatste statuswijziging.
+      - name: is_sold
+        description: Waar als de listing verkocht is (status = sold).
 
   - name: fct_transactions
     description: >
@@ -28,23 +63,66 @@ models:
       listingkenmerken. Basis voor GMV, fees en time-to-sell.
     columns:
       - name: transaction_id
+        description: Unieke transactie-id.
         tests: [unique, not_null]
       - name: listing_id
+        description: De verkochte listing (verwijst naar dim_listings).
         tests:
           - not_null
           - relationships:
               to: ref('dim_listings')
               field: listing_id
+      - name: seller_id
+        description: Gebruikers-id van de verkoper.
+      - name: buyer_id
+        description: Gebruikers-id van de koper.
       - name: amount_eur
-        description: Verkoopbedrag in euro's (GMV-component).
+        description: Verkoopbedrag in euro's — de GMV-component van deze transactie.
         tests: [not_null]
+      - name: fee_eur
+        description: Platformfee over deze transactie in euro's (omzet voor het platform).
+      - name: payment_method
+        description: Gebruikte betaalmethode (ideal, tikkie, cash, bank_transfer).
+      - name: sold_at
+        description: Moment van verkoop (timestamp).
+      - name: sold_date
+        description: Verkoopdatum (dag-granulariteit, voor tijdreeksen).
+      - name: category
+        description: Hoofdcategorie van de verkochte listing (gedenormaliseerd uit dim_listings).
+      - name: subcategory
+        description: Subcategorie van de verkochte listing.
+      - name: brand
+        description: Merk van het verkochte item.
+      - name: city
+        description: Plaats van de verkochte listing.
       - name: hours_to_sell
-        description: Uren tussen plaatsing en verkoop.
+        description: Uren tussen plaatsing en verkoop — de time-to-sell van deze transactie.
 
   - name: fct_events
-    description: Feitentabel gedragsevents, verrijkt met listingcontext.
+    description: >
+      Feitentabel gedragsevents — één rij per event (view, bod, bericht,
+      favoriet), verrijkt met listingcontext. Basis voor funnel- en
+      engagement-analyses.
     columns:
       - name: event_id
+        description: Unieke event-id.
         tests: [unique, not_null]
       - name: event_type
+        description: Soort event — view (bekeken), bid (bod), message (bericht), favorite (opgeslagen).
         tests: [not_null]
+      - name: listing_id
+        description: De listing waarop het event plaatsvond.
+      - name: user_id
+        description: De gebruiker die het event veroorzaakte.
+      - name: session_id
+        description: Sessie-identifier (gebruiker + uur) waarin het event viel.
+      - name: occurred_at
+        description: Moment van het event (timestamp).
+      - name: event_date
+        description: Datum van het event (dag-granulariteit).
+      - name: category
+        description: Hoofdcategorie van de betreffende listing.
+      - name: brand
+        description: Merk van de betreffende listing.
+      - name: city
+        description: Plaats van de betreffende listing.
