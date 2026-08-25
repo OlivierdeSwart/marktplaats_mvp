@@ -1,0 +1,306 @@
+{
+  "datasets": [
+    {
+      "name": "ds_kpi_totalen",
+      "displayName": "kpi_totalen",
+      "queryLines": [
+        "with sales as (\n",
+        "  select\n",
+        "    measure(gmv_eur) as gmv,\n",
+        "    measure(aantal_verkopen) as verkopen,\n",
+        "    measure(fee_omzet_eur) as fees,\n",
+        "    measure(mediaan_uren_tot_verkoop) as mediaan_uren\n",
+        "  from marktplaats.gold.mv_sales\n",
+        "),\n",
+        "listings as (\n",
+        "  select measure(conversie_pct) as conversie_pct\n",
+        "  from marktplaats.gold.mv_listings\n",
+        ")\n",
+        "select * from sales cross join listings"
+      ]
+    },
+    {
+      "name": "ds_gmv_per_dag",
+      "displayName": "gmv_per_dag",
+      "queryLines": [
+        "select verkoopdatum, measure(gmv_eur) as gmv, measure(aantal_verkopen) as verkopen\n",
+        "from marktplaats.gold.mv_sales\n",
+        "group by verkoopdatum"
+      ]
+    },
+    {
+      "name": "ds_gmv_per_categorie",
+      "displayName": "gmv_per_categorie",
+      "queryLines": [
+        "select categorie, measure(gmv_eur) as gmv, measure(aantal_verkopen) as verkopen\n",
+        "from marktplaats.gold.mv_sales\n",
+        "group by categorie"
+      ]
+    },
+    {
+      "name": "ds_conversie_per_categorie",
+      "displayName": "conversie_per_categorie",
+      "queryLines": [
+        "select categorie, round(measure(conversie_pct), 1) as conversie_pct,\n",
+        "       measure(aantal_listings) as listings\n",
+        "from marktplaats.gold.mv_listings\n",
+        "group by categorie"
+      ]
+    },
+    {
+      "name": "ds_engagement_funnel",
+      "displayName": "engagement_funnel",
+      "queryLines": [
+        "select event_type, measure(aantal_events) as events\n",
+        "from marktplaats.gold.mv_engagement\n",
+        "group by event_type"
+      ]
+    },
+    {
+      "name": "ds_gmv_per_kyc",
+      "displayName": "gmv_per_kyc",
+      "queryLines": [
+        "select case when verkoper_kyc then 'geverifieerd' else 'niet geverifieerd' end as kyc_status,\n",
+        "       measure(gmv_eur) as gmv\n",
+        "from marktplaats.gold.mv_sales\n",
+        "group by all"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "overzicht",
+      "displayName": "Overzicht",
+      "layout": [
+        {
+          "widget": {
+            "name": "counter_gmv",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_kpi_totalen",
+                  "fields": [{"name": "gmv", "expression": "SUM(`gmv`)"}],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "frame": {"showTitle": true, "title": "GMV totaal (€)"},
+              "encodings": {"value": {"fieldName": "gmv", "displayName": "GMV (€)"}}
+            }
+          },
+          "position": {"x": 0, "y": 0, "width": 2, "height": 3}
+        },
+        {
+          "widget": {
+            "name": "counter_verkopen",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_kpi_totalen",
+                  "fields": [{"name": "verkopen", "expression": "SUM(`verkopen`)"}],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "frame": {"showTitle": true, "title": "Verkopen"},
+              "encodings": {"value": {"fieldName": "verkopen", "displayName": "verkopen"}}
+            }
+          },
+          "position": {"x": 2, "y": 0, "width": 1, "height": 3}
+        },
+        {
+          "widget": {
+            "name": "counter_conversie",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_kpi_totalen",
+                  "fields": [{"name": "conversie_pct", "expression": "AVG(`conversie_pct`)"}],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "frame": {"showTitle": true, "title": "Conversie (%)"},
+              "encodings": {"value": {"fieldName": "conversie_pct", "displayName": "conversie %"}}
+            }
+          },
+          "position": {"x": 3, "y": 0, "width": 1, "height": 3}
+        },
+        {
+          "widget": {
+            "name": "counter_mediaan",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_kpi_totalen",
+                  "fields": [{"name": "mediaan_uren", "expression": "AVG(`mediaan_uren`)"}],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "frame": {"showTitle": true, "title": "Mediaan uren tot verkoop"},
+              "encodings": {"value": {"fieldName": "mediaan_uren", "displayName": "uren"}}
+            }
+          },
+          "position": {"x": 4, "y": 0, "width": 2, "height": 3}
+        },
+        {
+          "widget": {
+            "name": "line_gmv_dag",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_gmv_per_dag",
+                  "fields": [
+                    {"name": "verkoopdatum", "expression": "`verkoopdatum`"},
+                    {"name": "gmv", "expression": "SUM(`gmv`)"}
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "frame": {"showTitle": true, "title": "GMV per dag"},
+              "encodings": {
+                "x": {"fieldName": "verkoopdatum", "scale": {"type": "temporal"}, "displayName": "datum"},
+                "y": {"fieldName": "gmv", "scale": {"type": "quantitative"}, "displayName": "GMV (€)"}
+              }
+            }
+          },
+          "position": {"x": 0, "y": 3, "width": 4, "height": 6}
+        },
+        {
+          "widget": {
+            "name": "bar_gmv_categorie",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_gmv_per_categorie",
+                  "fields": [
+                    {"name": "categorie", "expression": "`categorie`"},
+                    {"name": "gmv", "expression": "SUM(`gmv`)"}
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "frame": {"showTitle": true, "title": "GMV per categorie"},
+              "encodings": {
+                "x": {"fieldName": "categorie", "scale": {"type": "categorical"}, "displayName": "categorie"},
+                "y": {"fieldName": "gmv", "scale": {"type": "quantitative"}, "displayName": "GMV (€)"}
+              }
+            }
+          },
+          "position": {"x": 4, "y": 3, "width": 2, "height": 6}
+        },
+        {
+          "widget": {
+            "name": "bar_conversie",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_conversie_per_categorie",
+                  "fields": [
+                    {"name": "categorie", "expression": "`categorie`"},
+                    {"name": "conversie_pct", "expression": "AVG(`conversie_pct`)"}
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "frame": {"showTitle": true, "title": "Conversie per categorie (%)"},
+              "encodings": {
+                "x": {"fieldName": "categorie", "scale": {"type": "categorical"}, "displayName": "categorie"},
+                "y": {"fieldName": "conversie_pct", "scale": {"type": "quantitative"}, "displayName": "conversie %"}
+              }
+            }
+          },
+          "position": {"x": 0, "y": 9, "width": 2, "height": 6}
+        },
+        {
+          "widget": {
+            "name": "bar_funnel",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_engagement_funnel",
+                  "fields": [
+                    {"name": "event_type", "expression": "`event_type`"},
+                    {"name": "events", "expression": "SUM(`events`)"}
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "frame": {"showTitle": true, "title": "Engagement: views tot biedingen"},
+              "encodings": {
+                "x": {"fieldName": "event_type", "scale": {"type": "categorical"}, "displayName": "event"},
+                "y": {"fieldName": "events", "scale": {"type": "quantitative"}, "displayName": "events"}
+              }
+            }
+          },
+          "position": {"x": 2, "y": 9, "width": 2, "height": 6}
+        },
+        {
+          "widget": {
+            "name": "pie_kyc",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_gmv_per_kyc",
+                  "fields": [
+                    {"name": "kyc_status", "expression": "`kyc_status`"},
+                    {"name": "gmv", "expression": "SUM(`gmv`)"}
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "pie",
+              "frame": {"showTitle": true, "title": "GMV naar verkoper-verificatie"},
+              "encodings": {
+                "angle": {"fieldName": "gmv", "scale": {"type": "quantitative"}, "displayName": "GMV (€)"},
+                "color": {"fieldName": "kyc_status", "scale": {"type": "categorical"}, "displayName": "status"}
+              }
+            }
+          },
+          "position": {"x": 4, "y": 9, "width": 2, "height": 6}
+        }
+      ]
+    }
+  ]
+}

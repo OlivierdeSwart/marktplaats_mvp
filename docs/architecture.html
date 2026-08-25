@@ -141,7 +141,8 @@
   <h1>Marktplaats Lakehouse MVP</h1>
   <p class="lede">Een end-to-end analytics-platform in een weekend: synthetische marketplace-data via een
   eigen REST-API, ingestion met dlt naar Delta-in-GCS, medallion-transformaties met dbt op Databricks,
-  en een conversational-BI-laag met metric views en Genie. Alles geprovisiond met Terraform, bewaakt door CI.</p>
+  en een governed semantische laag (metric views) met dashboards-als-code en Genie als conversational BI.
+  Alles geprovisiond met Terraform, georkestreerd door GitHub Actions + Lakeflow Job, bewaakt door CI.</p>
 </header>
 
 <!-- ================= 1. PLATFORM ================= -->
@@ -171,7 +172,7 @@
 
       <rect class="box" x="290" y="76" width="150" height="64" rx="4"/>
       <text class="t" x="365" y="102" text-anchor="middle">dlt</text>
-      <text class="m" x="365" y="120" text-anchor="middle">ingestion (uv run)</text>
+      <text class="m" x="365" y="120" text-anchor="middle">ingest (GH Actions cron)</text>
 
       <rect class="box" x="510" y="76" width="150" height="64" rx="4"/>
       <text class="t" x="585" y="102" text-anchor="middle">dbt</text>
@@ -179,7 +180,7 @@
 
       <rect class="box" x="730" y="76" width="160" height="64" rx="4"/>
       <text class="t" x="810" y="102" text-anchor="middle">GitHub Actions</text>
-      <text class="m" x="810" y="120" text-anchor="middle">CI: lint + dbt build</text>
+      <text class="m" x="810" y="120" text-anchor="middle">CI/CD · triggert job</text>
 
       <!-- zone: GCP -->
       <rect class="zone" x="40" y="228" width="400" height="330" rx="8"/>
@@ -217,6 +218,15 @@
       <text class="m" x="815" y="448" text-anchor="middle">dashboards</text>
       <text class="m" x="815" y="464" text-anchor="middle">Genie (NL-vragen)</text>
 
+      <rect class="box" x="530" y="430" width="170" height="56" rx="4"/>
+      <text class="t" x="615" y="453" text-anchor="middle">Lakeflow Job</text>
+      <text class="m" x="615" y="470" text-anchor="middle">dbt build + metric views</text>
+      <path class="flow" d="M615 430 L615 400" marker-end="url(#ar1)"/>
+      <text class="lbl" x="623" y="418">bouwt lagen</text>
+
+      <path class="flow" d="M810 140 L810 206 L660 206 L660 228" marker-end="url(#ar1)"/>
+      <text class="lbl" x="818" y="178">jobs run-now (API)</text>
+
       <!-- arrows: terraform naar beide clouds -->
       <path class="flow" d="M120 140 L120 205 L240 205 L240 228" marker-end="url(#ar1)"/>
       <path class="flow" d="M170 140 L170 190 L706 190 L706 228" marker-end="url(#ar1)"/>
@@ -246,9 +256,12 @@
       <text class="lbl" x="823" y="382">queries</text>
     </svg>
     <figcaption><strong>Platformoverzicht.</strong> Terraform provisiont beide omgevingen (bucket, service
-    accounts, Cloud Run, budgetten, catalog-structuur). dlt haalt data uit de eigen source-API en schrijft
-    Delta rechtstreeks naar GCS; Databricks serverless leest die bestanden via een Unity Catalog external
-    location zonder ze te kopiëren. dbt en CI praten alleen met de SQL warehouse.</figcaption>
+    accounts, Cloud Run, budgetten, catalog, warehouse, job én dashboards). De uurlijkse GitHub Actions-cron
+    draait dlt op de runner (API → Delta in GCS) en triggert daarna de Lakeflow Job via de API; die draait
+    dbt (silver/gold + tests) en deployt de metric views. Databricks leest de raw-bestanden via een Unity
+    Catalog external location, zonder kopiëren. Bewuste keuze: dlt draait níét als Databricks-taak —
+    serverless compute op GCP bleek, in tegenspraak met de documentatie, geen publieke internet-egress te
+    hebben (drievoudig empirisch vastgesteld).</figcaption>
   </figure>
 </section>
 
@@ -315,8 +328,7 @@
 
       <path class="flow" d="M520 156 L600 127" marker-end="url(#ar2)"/>
       <path class="flow" d="M520 282 L600 237" marker-end="url(#ar2)"/>
-      <path class="flow" d="M705 162 L705 186" marker-end="url(#ar2)"/>
-      <path class="flow" d="M705 288 L705 312" marker-end="url(#ar2)"/>
+      <path class="flow" d="M810 130 L830 130 L830 300 L760 300 L760 312" marker-end="url(#ar2)"/>
 
       <!-- kolom: gold -->
       <rect class="hd-gold" x="890" y="48" width="180" height="30" rx="4"/>
@@ -437,7 +449,9 @@
     lint met sqlfluff en draait <span style="font-family:'IBM Plex Mono',monospace">dbt build</span> (compileren,
     runnen én testen) tegen een geïsoleerd ci-schema op de SQL warehouse. Branch protection op main eist een
     groene check; de merge zelf triggert de deploy naar de productie-schemas. Secrets (Databricks-token) staan
-    in GitHub, nooit in code.</figcaption>
+    in GitHub, nooit in code. Naast ci en deploy loopt een derde workflow: de uurlijkse ingest-cron
+    (dlt op de runner → <span style="font-family:'IBM Plex Mono',monospace">jobs/run-now</span> naar Databricks),
+    waarmee GitHub Actions ook de rol van scheduler vervult.</figcaption>
   </figure>
 </section>
 

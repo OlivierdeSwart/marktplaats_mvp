@@ -42,7 +42,12 @@ resource "databricks_job" "marketplace_elt" {
 
     dbt_task {
       commands = [
-        "dbt build --target prod",
+        # geen --target: Databricks genereert zelf een profiel (met target
+        # 'databricks_cluster') incl. auth naar de warehouse hieronder;
+        # generate_schema_name routeert custom schemas gewoon naar silver/gold
+        "dbt build",
+        # semantische laag deployt mee: metric views op de verse gold-tabellen
+        "dbt run-operation create_metric_views",
       ]
       project_directory = "transform"
       # repo-root bevat geen profiles.yml -> Databricks genereert er zelf een

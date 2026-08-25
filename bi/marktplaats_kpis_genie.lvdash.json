@@ -1,0 +1,831 @@
+{
+    "datasets": [
+        {
+            "name": "2bb2e479",
+            "displayName": "kpi_totalen",
+            "queryLines": [
+                "with sales as (\n",
+                "  select\n",
+                "    measure(gmv_eur)                  as gmv,\n",
+                "    measure(aantal_verkopen)          as verkopen,\n",
+                "    measure(fee_omzet_eur)            as fees,\n",
+                "    measure(mediaan_uren_tot_verkoop) as mediaan_uren\n",
+                "  from marktplaats.gold.mv_sales\n",
+                "),\n",
+                "listings as (\n",
+                "  select measure(conversie_pct) as conversie_pct\n",
+                "  from marktplaats.gold.mv_listings\n",
+                ")\n",
+                "select * from sales cross join listings"
+            ]
+        },
+        {
+            "name": "271b1721",
+            "displayName": "gmv_per_dag",
+            "queryLines": [
+                "select verkoopdatum, measure(gmv_eur) as gmv, measure(aantal_verkopen) as verkopen\n",
+                "from marktplaats.gold.mv_sales\n",
+                "group by verkoopdatum"
+            ]
+        },
+        {
+            "name": "0aaaebd8",
+            "displayName": "gmv_per_categorie",
+            "queryLines": [
+                "select categorie, measure(gmv_eur) as gmv, measure(aantal_verkopen) as verkopen,\n",
+                "       round(measure(gem_uren_tot_verkoop), 1) as gem_uren_tot_verkoop\n",
+                "from marktplaats.gold.mv_sales\n",
+                "group by categorie"
+            ]
+        },
+        {
+            "name": "8198d814",
+            "displayName": "conversie_per_categorie",
+            "queryLines": [
+                "select categorie, round(measure(conversie_pct), 1) as conversie_pct,\n",
+                "       measure(aantal_listings) as listings,\n",
+                "       round(measure(gemiddelde_vraagprijs), 0) as gem_vraagprijs\n",
+                "from marktplaats.gold.mv_listings\n",
+                "group by categorie"
+            ]
+        },
+        {
+            "name": "b1085a62",
+            "displayName": "engagement_funnel",
+            "queryLines": [
+                "select event_type, measure(aantal_events) as events\n",
+                "from marktplaats.gold.mv_engagement\n",
+                "group by event_type"
+            ]
+        },
+        {
+            "name": "1727b33d",
+            "displayName": "gmv_per_kyc",
+            "queryLines": [
+                "select verkoper_kyc, measure(gmv_eur) as gmv\n",
+                "from marktplaats.gold.mv_sales\n",
+                "group by verkoper_kyc"
+            ]
+        }
+    ],
+    "pages": [
+        {
+            "name": "2e09d44c",
+            "displayName": "Genie: Marketplace Overview",
+            "layout": [
+                {
+                    "widget": {
+                        "name": "total_gmv",
+                        "queries": [
+                            {
+                                "name": "main_query",
+                                "query": {
+                                    "datasetName": "2bb2e479",
+                                    "fields": [
+                                        {
+                                            "name": "sum(gmv)",
+                                            "expression": "SUM(`gmv`)"
+                                        }
+                                    ],
+                                    "disaggregated": false
+                                }
+                            }
+                        ],
+                        "spec": {
+                            "version": 2,
+                            "frame": {
+                                "title": "Total GMV",
+                                "showTitle": true
+                            },
+                            "widgetType": "counter",
+                            "encodings": {
+                                "value": {
+                                    "fieldName": "sum(gmv)",
+                                    "rowNumber": 0
+                                }
+                            },
+                            "data": {
+                                "queryName": "main_query"
+                            }
+                        }
+                    },
+                    "position": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 3,
+                        "height": 3
+                    }
+                },
+                {
+                    "widget": {
+                        "name": "total_verkopen",
+                        "queries": [
+                            {
+                                "name": "main_query",
+                                "query": {
+                                    "datasetName": "2bb2e479",
+                                    "fields": [
+                                        {
+                                            "name": "sum(verkopen)",
+                                            "expression": "SUM(`verkopen`)"
+                                        }
+                                    ],
+                                    "disaggregated": false
+                                }
+                            }
+                        ],
+                        "spec": {
+                            "version": 2,
+                            "frame": {
+                                "title": "Total Verkopen",
+                                "showTitle": true
+                            },
+                            "widgetType": "counter",
+                            "encodings": {
+                                "value": {
+                                    "fieldName": "sum(verkopen)",
+                                    "rowNumber": 0
+                                }
+                            },
+                            "data": {
+                                "queryName": "main_query"
+                            }
+                        }
+                    },
+                    "position": {
+                        "x": 3,
+                        "y": 0,
+                        "width": 3,
+                        "height": 3
+                    }
+                },
+                {
+                    "widget": {
+                        "name": "total_fees",
+                        "queries": [
+                            {
+                                "name": "main_query",
+                                "query": {
+                                    "datasetName": "2bb2e479",
+                                    "fields": [
+                                        {
+                                            "name": "sum(fees)",
+                                            "expression": "SUM(`fees`)"
+                                        }
+                                    ],
+                                    "disaggregated": false
+                                }
+                            }
+                        ],
+                        "spec": {
+                            "version": 2,
+                            "frame": {
+                                "title": "Fee Omzet",
+                                "showTitle": true
+                            },
+                            "widgetType": "counter",
+                            "encodings": {
+                                "value": {
+                                    "fieldName": "sum(fees)",
+                                    "rowNumber": 0
+                                }
+                            },
+                            "data": {
+                                "queryName": "main_query"
+                            }
+                        }
+                    },
+                    "position": {
+                        "x": 6,
+                        "y": 0,
+                        "width": 3,
+                        "height": 3
+                    }
+                },
+                {
+                    "widget": {
+                        "name": "conversie_pct",
+                        "queries": [
+                            {
+                                "name": "main_query",
+                                "query": {
+                                    "datasetName": "2bb2e479",
+                                    "fields": [
+                                        {
+                                            "name": "avg(conversie_pct)",
+                                            "expression": "AVG(`conversie_pct`)"
+                                        }
+                                    ],
+                                    "disaggregated": false
+                                }
+                            }
+                        ],
+                        "spec": {
+                            "version": 2,
+                            "frame": {
+                                "title": "Conversie %",
+                                "showTitle": true
+                            },
+                            "widgetType": "counter",
+                            "encodings": {
+                                "value": {
+                                    "fieldName": "avg(conversie_pct)",
+                                    "rowNumber": 0
+                                }
+                            },
+                            "data": {
+                                "queryName": "main_query"
+                            }
+                        }
+                    },
+                    "position": {
+                        "x": 9,
+                        "y": 0,
+                        "width": 3,
+                        "height": 3
+                    }
+                },
+                {
+                    "widget": {
+                        "name": "gmv_trend",
+                        "queries": [
+                            {
+                                "name": "main_query",
+                                "query": {
+                                    "datasetName": "271b1721",
+                                    "fields": [
+                                        {
+                                            "name": "daily(verkoopdatum)",
+                                            "expression": "DATE_TRUNC(\"DAY\", `verkoopdatum`)"
+                                        },
+                                        {
+                                            "name": "sum(gmv)",
+                                            "expression": "SUM(`gmv`)"
+                                        }
+                                    ],
+                                    "disaggregated": false
+                                }
+                            }
+                        ],
+                        "spec": {
+                            "version": 3,
+                            "frame": {
+                                "title": "GMV Trend",
+                                "showTitle": true
+                            },
+                            "widgetType": "line",
+                            "encodings": {
+                                "x": {
+                                    "fieldName": "daily(verkoopdatum)",
+                                    "displayName": "Day",
+                                    "scale": {
+                                        "type": "temporal"
+                                    }
+                                },
+                                "y": {
+                                    "fieldName": "sum(gmv)",
+                                    "displayName": "gmv",
+                                    "scale": {
+                                        "type": "quantitative"
+                                    }
+                                }
+                            },
+                            "data": {
+                                "queryName": "main_query"
+                            }
+                        }
+                    },
+                    "position": {
+                        "x": 0,
+                        "y": 3,
+                        "width": 8,
+                        "height": 5
+                    }
+                },
+                {
+                    "widget": {
+                        "name": "verkopen_trend",
+                        "queries": [
+                            {
+                                "name": "main_query",
+                                "query": {
+                                    "datasetName": "271b1721",
+                                    "fields": [
+                                        {
+                                            "name": "daily(verkoopdatum)",
+                                            "expression": "DATE_TRUNC(\"DAY\", `verkoopdatum`)"
+                                        },
+                                        {
+                                            "name": "sum(verkopen)",
+                                            "expression": "SUM(`verkopen`)"
+                                        }
+                                    ],
+                                    "disaggregated": false
+                                }
+                            }
+                        ],
+                        "spec": {
+                            "version": 3,
+                            "frame": {
+                                "title": "Verkopen Trend",
+                                "showTitle": true
+                            },
+                            "widgetType": "line",
+                            "encodings": {
+                                "x": {
+                                    "fieldName": "daily(verkoopdatum)",
+                                    "displayName": "Day",
+                                    "scale": {
+                                        "type": "temporal"
+                                    }
+                                },
+                                "y": {
+                                    "fieldName": "sum(verkopen)",
+                                    "displayName": "verkopen",
+                                    "scale": {
+                                        "type": "quantitative"
+                                    }
+                                }
+                            },
+                            "data": {
+                                "queryName": "main_query"
+                            }
+                        }
+                    },
+                    "position": {
+                        "x": 8,
+                        "y": 3,
+                        "width": 4,
+                        "height": 5
+                    }
+                },
+                {
+                    "widget": {
+                        "name": "gmv_by_category",
+                        "queries": [
+                            {
+                                "name": "main_query",
+                                "query": {
+                                    "datasetName": "0aaaebd8",
+                                    "fields": [
+                                        {
+                                            "name": "categorie",
+                                            "expression": "`categorie`"
+                                        },
+                                        {
+                                            "name": "sum(gmv)",
+                                            "expression": "SUM(`gmv`)"
+                                        }
+                                    ],
+                                    "disaggregated": false
+                                }
+                            }
+                        ],
+                        "spec": {
+                            "version": 3,
+                            "frame": {
+                                "title": "GMV per Categorie",
+                                "showTitle": true
+                            },
+                            "widgetType": "bar",
+                            "encodings": {
+                                "x": {
+                                    "fieldName": "categorie",
+                                    "displayName": "categorie",
+                                    "scale": {
+                                        "type": "categorical"
+                                    }
+                                },
+                                "y": {
+                                    "fieldName": "sum(gmv)",
+                                    "displayName": "gmv",
+                                    "scale": {
+                                        "type": "quantitative"
+                                    }
+                                },
+                                "color": {
+                                    "fieldName": "categorie",
+                                    "displayName": "categorie",
+                                    "scale": {
+                                        "type": "categorical"
+                                    }
+                                }
+                            },
+                            "data": {
+                                "queryName": "main_query"
+                            }
+                        }
+                    },
+                    "position": {
+                        "x": 0,
+                        "y": 8,
+                        "width": 6,
+                        "height": 5
+                    }
+                },
+                {
+                    "widget": {
+                        "name": "category_performance",
+                        "queries": [
+                            {
+                                "name": "main_query",
+                                "query": {
+                                    "datasetName": "0aaaebd8",
+                                    "fields": [
+                                        {
+                                            "name": "categorie",
+                                            "expression": "`categorie`"
+                                        },
+                                        {
+                                            "name": "sum(gmv)",
+                                            "expression": "SUM(`gmv`)"
+                                        },
+                                        {
+                                            "name": "sum(verkopen)",
+                                            "expression": "SUM(`verkopen`)"
+                                        },
+                                        {
+                                            "name": "avg(gem_uren_tot_verkoop)",
+                                            "expression": "AVG(`gem_uren_tot_verkoop`)"
+                                        }
+                                    ],
+                                    "disaggregated": false
+                                }
+                            }
+                        ],
+                        "spec": {
+                            "version": 2,
+                            "frame": {
+                                "title": "Categorie Performance",
+                                "showTitle": true
+                            },
+                            "widgetType": "table",
+                            "encodings": {
+                                "columns": [
+                                    {
+                                        "fieldName": "categorie"
+                                    },
+                                    {
+                                        "fieldName": "sum(gmv)"
+                                    },
+                                    {
+                                        "fieldName": "sum(verkopen)"
+                                    },
+                                    {
+                                        "fieldName": "avg(gem_uren_tot_verkoop)"
+                                    }
+                                ]
+                            },
+                            "data": {
+                                "queryName": "main_query"
+                            }
+                        }
+                    },
+                    "position": {
+                        "x": 6,
+                        "y": 8,
+                        "width": 6,
+                        "height": 5
+                    }
+                },
+                {
+                    "widget": {
+                        "name": "conversion_by_category",
+                        "queries": [
+                            {
+                                "name": "main_query",
+                                "query": {
+                                    "datasetName": "8198d814",
+                                    "fields": [
+                                        {
+                                            "name": "categorie",
+                                            "expression": "`categorie`"
+                                        },
+                                        {
+                                            "name": "avg(conversie_pct)",
+                                            "expression": "AVG(`conversie_pct`)"
+                                        }
+                                    ],
+                                    "disaggregated": false
+                                }
+                            }
+                        ],
+                        "spec": {
+                            "version": 3,
+                            "frame": {
+                                "title": "Conversie per Categorie",
+                                "showTitle": true
+                            },
+                            "widgetType": "bar",
+                            "encodings": {
+                                "x": {
+                                    "fieldName": "categorie",
+                                    "displayName": "categorie",
+                                    "scale": {
+                                        "type": "categorical"
+                                    }
+                                },
+                                "y": {
+                                    "fieldName": "avg(conversie_pct)",
+                                    "displayName": "conversie_pct",
+                                    "scale": {
+                                        "type": "quantitative"
+                                    }
+                                },
+                                "color": {
+                                    "fieldName": "categorie",
+                                    "displayName": "categorie",
+                                    "scale": {
+                                        "type": "categorical"
+                                    }
+                                }
+                            },
+                            "data": {
+                                "queryName": "main_query"
+                            }
+                        }
+                    },
+                    "position": {
+                        "x": 0,
+                        "y": 13,
+                        "width": 6,
+                        "height": 5
+                    }
+                },
+                {
+                    "widget": {
+                        "name": "listings_mix",
+                        "queries": [
+                            {
+                                "name": "main_query",
+                                "query": {
+                                    "datasetName": "8198d814",
+                                    "fields": [
+                                        {
+                                            "name": "sum(listings)",
+                                            "expression": "SUM(`listings`)"
+                                        },
+                                        {
+                                            "name": "categorie",
+                                            "expression": "`categorie`"
+                                        }
+                                    ],
+                                    "disaggregated": false
+                                }
+                            }
+                        ],
+                        "spec": {
+                            "version": 3,
+                            "frame": {
+                                "title": "Listings Mix",
+                                "showTitle": true
+                            },
+                            "widgetType": "pie",
+                            "encodings": {
+                                "angle": {
+                                    "fieldName": "sum(listings)",
+                                    "scale": {
+                                        "type": "quantitative"
+                                    },
+                                    "displayName": "listings"
+                                },
+                                "color": {
+                                    "fieldName": "categorie",
+                                    "displayName": "categorie",
+                                    "scale": {
+                                        "type": "categorical"
+                                    }
+                                }
+                            },
+                            "data": {
+                                "queryName": "main_query"
+                            }
+                        }
+                    },
+                    "position": {
+                        "x": 6,
+                        "y": 13,
+                        "width": 6,
+                        "height": 5
+                    }
+                },
+                {
+                    "widget": {
+                        "name": "engagement_funnel",
+                        "queries": [
+                            {
+                                "name": "main_query",
+                                "query": {
+                                    "datasetName": "b1085a62",
+                                    "fields": [
+                                        {
+                                            "name": "event_type",
+                                            "expression": "`event_type`"
+                                        },
+                                        {
+                                            "name": "sum(events)",
+                                            "expression": "SUM(`events`)"
+                                        }
+                                    ],
+                                    "disaggregated": false
+                                }
+                            }
+                        ],
+                        "spec": {
+                            "version": 3,
+                            "frame": {
+                                "title": "Engagement Events",
+                                "showTitle": true
+                            },
+                            "widgetType": "bar",
+                            "encodings": {
+                                "x": {
+                                    "fieldName": "event_type",
+                                    "displayName": "event_type",
+                                    "scale": {
+                                        "type": "categorical"
+                                    }
+                                },
+                                "y": {
+                                    "fieldName": "sum(events)",
+                                    "displayName": "events",
+                                    "scale": {
+                                        "type": "quantitative"
+                                    }
+                                },
+                                "color": {
+                                    "fieldName": "event_type",
+                                    "displayName": "event_type",
+                                    "scale": {
+                                        "type": "categorical"
+                                    }
+                                }
+                            },
+                            "data": {
+                                "queryName": "main_query"
+                            }
+                        }
+                    },
+                    "position": {
+                        "x": 0,
+                        "y": 18,
+                        "width": 8,
+                        "height": 5
+                    }
+                },
+                {
+                    "widget": {
+                        "name": "gmv_by_kyc",
+                        "queries": [
+                            {
+                                "name": "main_query",
+                                "query": {
+                                    "datasetName": "1727b33d",
+                                    "fields": [
+                                        {
+                                            "name": "sum(gmv)",
+                                            "expression": "SUM(`gmv`)"
+                                        },
+                                        {
+                                            "name": "verkoper_kyc",
+                                            "expression": "`verkoper_kyc`"
+                                        }
+                                    ],
+                                    "disaggregated": false
+                                }
+                            }
+                        ],
+                        "spec": {
+                            "version": 3,
+                            "frame": {
+                                "title": "GMV by KYC",
+                                "showTitle": true
+                            },
+                            "widgetType": "pie",
+                            "encodings": {
+                                "angle": {
+                                    "fieldName": "sum(gmv)",
+                                    "scale": {
+                                        "type": "quantitative"
+                                    },
+                                    "displayName": "gmv"
+                                },
+                                "color": {
+                                    "fieldName": "verkoper_kyc",
+                                    "displayName": "verkoper_kyc",
+                                    "scale": {
+                                        "type": "categorical"
+                                    }
+                                }
+                            },
+                            "data": {
+                                "queryName": "main_query"
+                            }
+                        }
+                    },
+                    "position": {
+                        "x": 8,
+                        "y": 18,
+                        "width": 4,
+                        "height": 5
+                    }
+                }
+            ],
+            "pageType": "PAGE_TYPE_CANVAS",
+            "layoutVersion": "GRID_V1"
+        },
+        {
+            "name": "d481613e",
+            "displayName": "Untitled page",
+            "layout": [
+                {
+                    "widget": {
+                        "name": "bf571f0a",
+                        "queries": [
+                            {
+                                "name": "main_query",
+                                "query": {
+                                    "datasetName": "2bb2e479",
+                                    "disaggregated": true
+                                }
+                            }
+                        ],
+                        "spec": {
+                            "version": 3,
+                            "widgetType": "bar",
+                            "encodings": {}
+                        }
+                    },
+                    "position": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 6,
+                        "height": 6
+                    }
+                },
+                {
+                    "widget": {
+                        "name": "92bfa6cb",
+                        "queries": [
+                            {
+                                "name": "main_query",
+                                "query": {
+                                    "datasetName": "0aaaebd8",
+                                    "fields": [
+                                        {
+                                            "name": "sum(gmv)",
+                                            "expression": "SUM(`gmv`)"
+                                        },
+                                        {
+                                            "name": "categorie",
+                                            "expression": "`categorie`"
+                                        }
+                                    ],
+                                    "disaggregated": false
+                                }
+                            }
+                        ],
+                        "spec": {
+                            "version": 3,
+                            "frame": {
+                                "showTitle": false
+                            },
+                            "widgetType": "bar",
+                            "encodings": {
+                                "x": {
+                                    "fieldName": "sum(gmv)",
+                                    "scale": {
+                                        "type": "quantitative"
+                                    }
+                                },
+                                "y": {
+                                    "fieldName": "categorie",
+                                    "scale": {
+                                        "type": "categorical"
+                                    }
+                                }
+                            },
+                            "data": {
+                                "queryName": "main_query"
+                            }
+                        }
+                    },
+                    "position": {
+                        "x": 6,
+                        "y": 0,
+                        "width": 6,
+                        "height": 6
+                    }
+                }
+            ],
+            "pageType": "PAGE_TYPE_CANVAS",
+            "layoutVersion": "GRID_V1"
+        }
+    ],
+    "uiSettings": {
+        "theme": {
+            "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+        },
+        "applyModeEnabled": false
+    }
+}
